@@ -2,7 +2,7 @@ import numpy as np
 import math
 
 # trainSet=[[0.1,0.1,-0.9],[0.9,0.9,-0.9],[0.1,0.9,0.9],[0.9,0.1,0.9]]
-trainSet=[[0.1,0.1,0.1],[0.1,0.9,0.9],[0.9,0.1,0.9],[0.9,0.9,0.1]]
+trainSet=[[-1.0,-1.0,-1.0],[-1.0,1.0,1.0],[1.0,-1.0,1.0],[1.0,1.0,-1.0]]
 trainSet=np.array(trainSet)
 trainSet=np.transpose(trainSet)
 
@@ -151,37 +151,12 @@ class DNN:
 		for i in range(len(self.layers)-1):
 			templayer=Layer(self.layers[i].n_output,self.layers[i].n_input,'ta')
 
+def test():
+	x=np.random.rand(2,10)
+	dn=DNN([[2,'relu'],[8,'relu'],[8,'relu'],[8,'relu'],[2,'ta']])
+	dn.train(x,x,3000)
+	print x-dn.forward(x)
 
-	def tojs(self,filename):
-		f=open(filename,'w')
-		sl=[]
-		# sl.append('(function(){')
-		sl.append('var list=[];')
-		size=np.shape(self.hiddenLayer.w)
-		for i in range(size[0]):
-			sumv='sum1'+str(i)
-			sl.append('var '+sumv+'=0.0;')
-			for j in range(size[1]):
-				sl.append('var a'+str(i)+'b'+str(j)+'='+str('%.5f' % self.hiddenLayer.w[i][j])+';')
-				sl.append(sumv+'+=a'+str(i)+'b'+str(j)+'*'+str('%.5f' % self.hiddenLayer.input[j][0])+';')
-			sl.append(sumv+'+='+str('%.5f' % self.hiddenLayer.b[i][0])+';')
-			sl.append(sumv+'=1/(1+Math.exp(-'+sumv+'))'+';')
-
-		size=np.shape(self.outputLayer.w)
-		for i in range(size[0]):
-			sumv='sum2'+str(i)
-			sl.append('var '+sumv+'=0.0;')
-			for j in range(size[1]):
-				sl.append('var a'+str(i)+'b'+str(j)+'='+str('%.5f' % self.outputLayer.w[i][j])+';')
-				sl.append(sumv+'+=a'+str(i)+'b'+str(j)+'*'+str('%.5f' % self.outputLayer.input[j][0])+';')
-			sl.append(sumv+'+='+str('%.5f' % self.outputLayer.b[i][0])+';')
-			sl.append(sumv+'=1/(1+Math.exp(-'+sumv+'));')
-			sl.append('list.push('+sumv+');')
-		sl.append('''for(var i=0;i<list.length;i++){list[i]=String.fromCharCode((list[i]*256+0.5)|0);}var nerver=list.join('');''')
-		# sl.append('})()')
-		f.write('\n'.join(sl))
-		f.close()
-
-def str2vec(string):
-	return np.array([ord(i) for i in string]).reshape(-1,1)/256.0
+if __name__ == '__main__':
+	test()
 
