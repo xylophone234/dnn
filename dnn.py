@@ -36,6 +36,16 @@ def id(x):
 def did(y):
 	return 1.0
 
+def softmax(x):
+    e = numpy.exp(x - numpy.max(x))  # prevent overflow
+    if e.ndim == 1:
+        return e / numpy.sum(e, axis=0)
+    else:  
+        return e / numpy.array([numpy.sum(e, axis=1)]).T  # ndim = 2
+
+def dsoftmax(y):
+	pass
+
 # sigmoid_ufunc=np.vectorize(sigmoid,otypes=[np.float])
 # dsigmoid_ufunc=np.vectorize(dsigmoid,otypes=[np.float])
 # sigmoid_ufunc=np.vectorize(relu,otypes=[np.float])
@@ -65,6 +75,10 @@ active={
 	'id':{
 		'a':np.vectorize(id,otypes=[np.float]),
 		'd':np.vectorize(did,otypes=[np.float])
+	},
+	'softmax':{
+		'a':softmax,
+		'd':dsoftmax
 	}
 }
 
@@ -164,11 +178,12 @@ def test():
 	x=np.random.rand(2,1000)
 	y=np.cos(x)
 	dn=DNN([[2,'relu'],[10,'relu'],[2,'id']])
-	dn.train(x,y,1000)
+	dn.train(x,y,100,100)
 	print x-dn.forward(x)
 	t=np.random.rand(2,100000)
 	e=np.cos(t)-dn.forward(t)
-	print (e*e).sum()
+	print e
+	print math.sqrt((e*e).sum()/100000)
 
 if __name__ == '__main__':
 	test()
