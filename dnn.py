@@ -31,6 +31,11 @@ def ta(x):
 def dta(y):
 	return 1.144*(1.0-y*y/2.9443)
 
+def id(x):
+	return x
+def did(y):
+	return 1.0
+
 # sigmoid_ufunc=np.vectorize(sigmoid,otypes=[np.float])
 # dsigmoid_ufunc=np.vectorize(dsigmoid,otypes=[np.float])
 # sigmoid_ufunc=np.vectorize(relu,otypes=[np.float])
@@ -56,6 +61,10 @@ active={
 	'ta':{
 		'a':np.vectorize(ta,otypes=[np.float]),
 		'd':np.vectorize(dta,otypes=[np.float])
+	},
+	'id':{
+		'a':np.vectorize(id,otypes=[np.float]),
+		'd':np.vectorize(did,otypes=[np.float])
 	}
 }
 
@@ -99,7 +108,7 @@ class Layer:
 		self.deltab=self.delta.sum(axis=1).reshape(-1,1)/self.input.shape[1]
 		# print (self.deltaw)
 		self.w=self.w+self.deltaw*alpha+m*self.lastDeltaw
-		self.lastDeltaw=self.deltaw
+		self.lastDeltaw=self.deltaw*alpha
 		# print('b',self.b)
 		# print('delta',self.deltab.sum(axis=1))
 		self.b=self.b+self.deltab*alpha+m*self.lastDeltab
@@ -118,10 +127,10 @@ class DNN:
 			o=self.layers[i+1].forward(self.layers[i].output)
 		return o
 
-	def train(self,trainSetx,trainSety,n,alpha=0.001,m=0.5):
+	def train(self,trainSetx,trainSety,n,npatch=1,alpha=0.05,m=0.3):
 		patchx=[]
 		patchy=[]
-		npatch=1
+		# npatch=1
 		patchsize=int(trainSetx.shape[1]/npatch)
 		print patchsize
 		for i in range(npatch):
@@ -152,10 +161,14 @@ class DNN:
 			templayer=Layer(self.layers[i].n_output,self.layers[i].n_input,'ta')
 
 def test():
-	x=np.random.rand(2,10)
-	dn=DNN([[2,'relu'],[8,'relu'],[8,'relu'],[8,'relu'],[2,'ta']])
-	dn.train(x,x,3000)
+	x=np.random.rand(2,1000)
+	y=np.cos(x)
+	dn=DNN([[2,'relu'],[10,'relu'],[2,'id']])
+	dn.train(x,y,1000)
 	print x-dn.forward(x)
+	t=np.random.rand(2,100000)
+	e=np.cos(t)-dn.forward(t)
+	print (e*e).sum()
 
 if __name__ == '__main__':
 	test()
