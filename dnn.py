@@ -36,15 +36,19 @@ def id(x):
 def did(y):
 	return 1.0
 
+logistic=np.vectorize(sigmoid,otypes=[np.float])
 def softmax(x):
-    e = numpy.exp(x - numpy.max(x))  # prevent overflow
-    if e.ndim == 1:
-        return e / numpy.sum(e, axis=0)
-    else:  
-        return e / numpy.array([numpy.sum(e, axis=1)]).T  # ndim = 2
+    # e = np.exp(x - x.max(axis=0))  # prevent overflow
+    # if e.ndim == 1:
+    #     return e / np.sum(e, axis=0)
+    # else:  
+    #     return e / np.array([np.sum(e, axis=0)]).T  # ndim = 2
+    a=np.exp(x)
+    suma=a.sum(axis=0)
+    return a/suma
 
 def dsoftmax(y):
-	pass
+	return 1.0
 
 # sigmoid_ufunc=np.vectorize(sigmoid,otypes=[np.float])
 # dsigmoid_ufunc=np.vectorize(dsigmoid,otypes=[np.float])
@@ -99,6 +103,7 @@ class Layer:
 		self.lastDeltab=np.zeros((n_output,)).reshape(-1,1)
 		self.a=active[sig]['a']
 		self.d=active[sig]['d']
+		self.type=sig
 
 
 
@@ -158,16 +163,7 @@ class DNN:
 					self.layers[j].delta=np.dot(np.transpose(self.layers[j+1].w),self.layers[j+1].delta)*self.layers[j].d(self.layers[j].output)
 				for j in range(0,len(self.layers))[::-1]:
 					self.layers[j].adjust(self.layers[j].delta,alpha,m)
-				# # print('o',o)
-				# deltao=(patchy[k]-o)*dsigmoid_ufunc(self.outputLayer.output)
-				# # print('deltao',deltao)
-				# deltah1=np.dot(np.transpose(self.outputLayer.w),deltao)*dsigmoid_ufunc(self.hidden1.output)
-				# deltah=np.dot(np.transpose(self.hidden1.w),deltah1)*dsigmoid_ufunc(self.hiddenLayer.output)
-				# # print('deltah',deltah)
-				# self.outputLayer.adjust(deltao,alpha,m)
-				# self.hidden1.adjust(deltah1,alpha,m)
-				# self.hiddenLayer.adjust(deltah,alpha,m)
-				# # print(o)
+				
 				print(((patchy[k]-o)*(patchy[k]-o)).sum()/(o.shape[0]*o.shape[1]))
 	# todo
 	def pretrain(self,x):
@@ -176,12 +172,12 @@ class DNN:
 
 def test():
 	x=np.random.rand(2,1000)
-	y=np.cos(x)
-	dn=DNN([[2,'relu'],[10,'relu'],[2,'id']])
+	y=np.cos(x)-0.5
+	dn=DNN([[2,'relu'],[10,'id'],[2]])
 	dn.train(x,y,100,100)
-	print x-dn.forward(x)
+	print y-dn.forward(x)
 	t=np.random.rand(2,100000)
-	e=np.cos(t)-dn.forward(t)
+	e=np.cos(t)-0.5-dn.forward(t)
 	print e
 	print math.sqrt((e*e).sum()/100000)
 
