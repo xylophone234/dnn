@@ -43,7 +43,7 @@ def softmax(x):
     #     return e / np.sum(e, axis=0)
     # else:  
     #     return e / np.array([np.sum(e, axis=0)]).T  # ndim = 2
-    a=np.exp(x)
+    a=np.exp(x-x.max(axis=0))
     suma=a.sum(axis=0)
     return a/suma
 
@@ -151,7 +151,7 @@ class DNN:
 		patchy=[]
 		# npatch=1
 		patchsize=int(trainSetx.shape[1]/npatch)
-		print patchsize
+		# print patchsize
 		for i in range(npatch):
 			patchx.append(trainSetx[:,i*patchsize:(i+1)*patchsize])
 			patchy.append(trainSety[:,i*patchsize:(i+1)*patchsize])
@@ -164,7 +164,7 @@ class DNN:
 				for j in range(0,len(self.layers))[::-1]:
 					self.layers[j].adjust(self.layers[j].delta,alpha,m)
 				
-				print(((patchy[k]-o)*(patchy[k]-o)).sum()/(o.shape[0]*o.shape[1]))
+				# print(((patchy[k]-o)*(patchy[k]-o)).sum()/(o.shape[0]*o.shape[1]))
 	# todo
 	def pretrain(self,x):
 		for i in range(len(self.layers)-1):
