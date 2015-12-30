@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import json
 
 # trainSet=[[0.1,0.1,-0.9],[0.9,0.9,-0.9],[0.1,0.9,0.9],[0.9,0.1,0.9]]
 trainSet=[[-1.0,-1.0,-1.0],[-1.0,1.0,1.0],[1.0,-1.0,1.0],[1.0,1.0,-1.0]]
@@ -105,6 +106,16 @@ class Layer:
 		self.d=active[sig]['d']
 		self.type=sig
 
+	def tojsonobj(self):
+		obj={
+			"n_input":self.n_input,
+			"n_output":self.n_output,
+			"w":self.w.tolist(),
+			"b":self.b.tolist(),
+			"type":self.type
+		}
+		return obj
+
 
 
 	def forward(self,x):
@@ -136,6 +147,8 @@ class Layer:
 class DNN:
 	def __init__(self,layerList):
 		self.layers=[]
+		self.layerList=layerList
+		self.trainerror=0
 		for i in range(len(layerList)-1):
 			self.layers.append(Layer(layerList[i][0],layerList[i+1][0],layerList[i][1]))
 		
@@ -164,11 +177,34 @@ class DNN:
 				for j in range(0,len(self.layers))[::-1]:
 					self.layers[j].adjust(self.layers[j].delta,alpha,m)
 				
+				self.trainerror=((patchy[k]-o)*(patchy[k]-o)).sum()/(o.shape[0]*o.shape[1])
 				# print(((patchy[k]-o)*(patchy[k]-o)).sum()/(o.shape[0]*o.shape[1]))
+	
+	def tojson(self,filename):
+		obj={
+			"structor":self.layerList,
+			"layerparam":[layer.tojsonobj() for layer in self.layers]
+		}
+		f=open(filename,'w')
+		f.write(json.dumps(obj,ensure_ascii=False))
+		f.close()
+
+	def fromjson(self,filename):
+		f=open(filename,'r')
+		txt=f.read()
+		f.close()
+		obj=json.loads(txt)
+		self.__init__(obj["structor"])
+		for layer,param in zip(self.layers,obj["layerparam"]):
+			layer.w=np.array(param["w"])
+			layer.b=np.array(param["b"])
+
 	# todo
 	def pretrain(self,x):
 		for i in range(len(self.layers)-1):
 			templayer=Layer(self.layers[i].n_output,self.layers[i].n_input,'ta')
+
+
 
 def test():
 	x=np.random.rand(2,1000)
